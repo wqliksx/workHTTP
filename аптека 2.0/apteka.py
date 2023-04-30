@@ -19,17 +19,14 @@ def get_geocode_result(geocode_data, **params):
     response = requests.get(geocoder_api_server, params=geocoder_params)
 
     if not response:
-        # обработка ошибочной ситуации
         pass
 
-    # Преобразуем ответ в json-объект
     json_response = response.json()
 
     return json_response
 
 
 def get_toponym(geocode_result):
-    # Получаем первый топоним из ответа геокодера.
     try:
         toponym = geocode_result["response"]["GeoObjectCollection"][
             "featureMember"][0]["GeoObject"]
@@ -39,9 +36,7 @@ def get_toponym(geocode_result):
 
 
 def get_ll_from_geocode_response(toponym):
-    # Координаты центра топонима:
     toponym_coodrinates = toponym["Point"]["pos"]
-    # Долгота и широта:
     toponym_longitude, toponym_lattitude = toponym_coodrinates.split(" ")
     return toponym_longitude, toponym_lattitude
 
@@ -61,10 +56,8 @@ def get_organizations_to_point(search_data, **params):
     response = requests.get(search_api_server, params=search_params)
 
     if not response:
-        # обработка ошибочной ситуации
         pass
 
-    # Преобразуем ответ в json-объект
     json_response = response.json()
 
     return json_response
@@ -83,26 +76,22 @@ def get_organization_coord(organization):
 
 
 def lonlat_distance(a, b):
-    degree_to_meters_factor = 111 * 1000  # 111 километров в метрах
+    degree_to_meters_factor = 111 * 1000
     a_lon, a_lat = a
     b_lon, b_lat = b
 
-    # Берем среднюю по широте точку и считаем коэффициент для нее.
     radians_lattitude = math.radians((a_lat + b_lat) / 2.)
     lat_lon_factor = math.cos(radians_lattitude)
 
-    # Вычисляем смещения в метрах по вертикали и горизонтали.
     dx = abs(a_lon - b_lon) * degree_to_meters_factor * lat_lon_factor
     dy = abs(a_lat - b_lat) * degree_to_meters_factor
 
-    # Вычисляем расстояние между точками.
     distance = math.sqrt(dx * dx + dy * dy)
 
     return distance
 
 
 def get_static_map(lat=None, lon=None, **params):
-    # Собираем параметры для запроса к StaticMapsAPI:
     map_type = params.get('l', 'map')
     map_params = {
         'l': map_type,
@@ -112,7 +101,6 @@ def get_static_map(lat=None, lon=None, **params):
         ll = ",".join([lat, lon])
         map_params['ll'] = ll
     map_api_server = "http://static-maps.yandex.ru/1.x/"
-    # ... и выполняем запрос
     response = requests.get(map_api_server, params=map_params)
     response.raise_for_status()
     return response.content

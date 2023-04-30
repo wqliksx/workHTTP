@@ -1,27 +1,31 @@
 import sys
-from io import BytesIO
-# Этот класс поможет нам сделать картинку из потока байт
 
 import requests
-from PIL import Image
-
-from utils import get_address_span
 
 
 def get_geocode_result(geocode_data, **params):
+
     geocoder_api_server = "http://geocode-maps.yandex.ru/1.x/"
 
     geocoder_params = {
+
         "apikey": "40d1649f-0493-4b70-98ba-98533de7710b",
+
         "geocode": geocode_data,
+
         "format": "json",
+
         **params
+
     }
 
     response = requests.get(geocoder_api_server, params=geocoder_params)
 
     if not response:
+
+
         pass
+
 
     json_response = response.json()
 
@@ -42,19 +46,6 @@ def get_ll_from_geocode_response(toponym):
     toponym_longitude, toponym_lattitude = toponym_coodrinates.split(" ")
     return toponym_longitude, toponym_lattitude
 
-
-def get_static_map(lat, lon, **params):
-    map_type = params.get('l', 'map')
-    map_params = {
-        "ll": ",".join([lat, lon]),
-        "l": map_type,
-        **params,
-    }
-    map_api_server = "http://static-maps.yandex.ru/1.x/"
-    response = requests.get(map_api_server, params=map_params)
-    return response.content
-
-
 def main():
     toponym_to_find = " ".join(sys.argv[1:])
     geocode_res = get_geocode_result(toponym_to_find)
@@ -64,15 +55,8 @@ def main():
         print('Объект не найден')
         return 1
     lat, lon = get_ll_from_geocode_response(toponym)
-    span = get_address_span(toponym)
-    span = ','.join(map(str, span))
-    pointer_style = 'pm2'
-    pointer_color = 'org'
-    pointer_size = 'l'
-    pointer = f'{lat},{lon},{pointer_style}{pointer_color}{pointer_size}'
-    image_raw = get_static_map(lat, lon, spn=span, pt=pointer)
-    Image.open(BytesIO(
-        image_raw)).show()
+    district = get_toponym(get_geocode_result(','.join([lat, lon]), kind='district'))
+    print(district['name'])
 
 
 if __name__ == '__main__':

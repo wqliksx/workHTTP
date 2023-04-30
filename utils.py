@@ -1,4 +1,5 @@
 import math
+from typing import List
 
 import requests
 
@@ -145,3 +146,24 @@ def pprint_snippet(snippet):
     print('Адрес:', snippet['address'])
     print('Время работы:', snippet['hours']['text'])
     print('Расстояние от организации до исходной точки:', snippet['distance'], 'м')
+
+
+def get_organization_pointers(organizations: List):
+    pointers = []
+    for org in organizations:
+        coord = get_organization_coord(org)
+        coord = ','.join(coord)
+        pt_style = 'pm2'
+        pt_size = 'l'
+        try:
+            hours = org['properties']['CompanyMetaData']['Hours']
+            is_all_day = hours['Availabilities'][0]['TwentyFourHours']
+            if is_all_day:
+                color = 'gn'
+            else:
+                color = 'bl'
+        except (IndexError, KeyError):
+            color = 'gr'
+        pt = f"{coord},{pt_style}{color}{pt_size}"
+        pointers.append(pt)
+    return pointers
